@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>98% / 2%</title>
+  <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+  <style>
+:root {
+  --deep:  #020d1a;
+  --abyss: #041628;
+  --mid:   #0a2a45;
+  --steel: #0d3d5e;
+  --ocean: #1a6088;
+  --wave:  #2a8fb5;
+  --foam:  #5bbcd8;
+  --mist:  #a8d8ea;
+  --crest: #d4eef7;
+  --gold: #f0c040;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+
+
+body {
+  background: transparent;
+  color: var(--mist);
+  font-family: monospace;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+  </style>
+</head>
+<body>
+
+
+
+<video id="bg-video" autoplay loop muted playsinline style="
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 1;
+  opacity: 1;
+">
+  <source src="OahuJan25.mp4" type="video/mp4">
+</video>
+
+
+
+<div id="start-screen" style="
+  position:fixed; inset:0;
+  background: rgba(0, 0, 0, 0.4);
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  z-index:999; gap:16px;
+">
+  <div style="font-family:'VT323',monospace; font-size:120px; color:var(--foam);">98% / 2%</div>
+  <div style="font-size:11px; color:var(--steel); letter-spacing:0.3em;">MANHATTAN ↔ BROOKLYN</div>
+
+  <div id="host-section" style="display:flex; flex-direction:column; align-items:center; gap:10px; margin-top:20px;">
+    <button onclick="startHost()" style="background:none; border:1px solid var(--gold); color:var(--gold); font-family:monospace; font-size:12px; padding:10px 28px; cursor:pointer; letter-spacing:0.15em;">[ HOST — BK ]</button>
+    <div id="host-id" style="font-size:10px; color:var(--steel); letter-spacing:0.1em;"></div>
+  </div>
+
+  <div style="display:flex; flex-direction:column; align-items:center; gap:10px; margin-bottom:20px;">
+    <input id="peer-input" placeholder="paste host ID here" style="background:var(--abyss); border:1px solid var(--mid); color:var(--mist); font-family:monospace; font-size:11px; padding:8px 16px; letter-spacing:0.1em; outline:none; width:260px; margin-bottom:15px;">
+    <button onclick="joinHost()" style="background:none; border:1px solid var(--foam); color:var(--foam); font-family:monospace; font-size:12px; padding:10px 28px; cursor:pointer; letter-spacing:0.15em;">[ JOIN — MHT ]</button>
+  </div>
+
+  <div id="conn-status" style="font-size:10px; color:var(--mid); letter-spacing:0.1em;">—</div>
+</div>
+
+<div id="main-screen" style="width:600px; position:relative; z-index:2; display:none;">
+  <div style="position:fixed; inset:0; background:rgba(0, 0, 0, 0.4); z-index:-1;"></div>
+
+
+
+<div id="bigNum" style="
+  font-size: 160px;
+  line-height: 1;
+  color: var(--crest);
+  font-family: 'VT323', monospace;
+  margin-bottom: 10px;
+">100<span style="font-size:50px; color:var(--ocean);">%</span></div>
+
+  <div style="width:100%; height:1px; background:var(--abyss); margin-bottom:5px;">
+
+    <div id="bar" style="
+      height: 100%;
+      width: 100%;
+      background: linear-gradient(90deg, var(--ocean), var(--foam));
+      transition: width 0.5s ease;
+    "></div>
+  </div>
+
+  <div style="
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px 48px;
+    margin-top: 36px;
+    margin-bottom: 36px;
+  ">
+
+    <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--mid); padding:5px 0; border-bottom:1px solid var(--abyss);">
+      <span>Controlled</span>
+      <span style="color:var(--wave);">2.00%</span>
+    </div>
+
+    <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--mid); padding:5px 0; border-bottom:1px solid var(--abyss);">
+      <span>Environment</span>
+      <span id="env-val" style="color:var(--steel);">0.00%</span>
+    </div>
+
+    <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--mid); padding:5px 0; border-bottom:1px solid var(--abyss);">
+      <span>Push attempts</span>
+      <span id="push-count" style="color:var(--steel);">0</span>
+    </div>
+
+    <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--mid); padding:5px 0; border-bottom:1px solid var(--abyss);">
+      <span>Status</span>
+      <span id="status-val" style="color:var(--steel);">Standby</span>
+    </div>
+
+  </div>
+
+
+
+<!-- push back -->
+<div style="display:flex; flex-direction:column; align-items:center; gap:12px; margin-bottom:40px;">
+
+    <div id="win-dot" style="
+      width:6px; height:6px;
+      border-radius:50%;
+      background:var(--mid);
+      flex-shrink:0;
+    "></div>
+
+    <button id="push-btn" onclick="pushBack()" style="
+      background: none;
+      border: 1px solid var(--mid);
+      color: var(--steel);
+      font-family: 'VT323', monospace;
+      font-size: 20px;
+      letter-spacing: 0.15em;
+      padding: 8px 28px;
+      cursor: pointer;
+    ">[ PUSH BACK ]</button>
+
+    <div id="push-log" style="font-size:11px; color:var(--mid);">—</div>
+
+  </div>
+
+
+
+  <!-- bottom info-->
+  <div style="font-size:10px; color:var(--abyss); display:flex; justify-content:space-between;">
+    <span>98% / 2%</span>
+    <span id="session-time">T+00:00</span>
+    <span>Manhattan ↔ Brooklyn</span>
+  </div>
+
+</div>
+
+
+
+  <script>
+let waveGain = null;
+let peer = null;
+let conn = null;
+let isHost = false;
+
+function startHost() {
+  isHost = true;
+  peer = new Peer();
+  peer.on('open', id => {
+    document.getElementById('host-id').textContent = 'Your ID: ' + id;
+    document.getElementById('conn-status').textContent = 'Waiting for Manhattan to join...';
+  });
+  peer.on('connection', c => {
+    conn = c;
+    conn.on('data', receiveData);
+    document.getElementById('conn-status').textContent = 'Connected — starting...';
+    setTimeout(() => {
+      startPerf();
+      sendData('start', true);
+    }, 1000);
+  });
+}
+
+function joinHost() {
+  const id = document.getElementById('peer-input').value.trim();
+  if (!id) return;
+  peer = new Peer();
+  peer.on('open', () => {
+    conn = peer.connect(id);
+    conn.on('open', () => {
+      document.getElementById('conn-status').textContent = 'Connected — starting...';
+      conn.on('data', receiveData);
+      setTimeout(() => startPerf(), 1000);
+    });
+  });
+}
+
+function sendData(type, value) {
+  if (conn && conn.open) {
+    conn.send({ type, value });
+  }
+}
+
+function receiveData(data) {
+  if (data.type === 'drop') {
+    triggerDrop(data.value);
+    openWindow();
+  }
+  if (data.type === 'push') {
+    current = Math.min(100, current + data.value);
+    render();
+  }
+  if (data.type === 'start') {
+    startPerf();  // join那边收到start信号才开始
+  }
+}
+
+function startPerf() {
+  document.getElementById('start-screen').style.display = 'none';
+  document.getElementById('main-screen').style.display = 'block';
+  startTime = Date.now();
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  loadWaves();
+}
+
+
+
+function loadWaves() {
+  fetch('https://audioboom.com/posts/8418114-midnight-waves-on-a-beach.mp3')
+    .then(r => r.arrayBuffer())
+    .then(buf => audioCtx.decodeAudioData(buf))
+    .then(decoded => {
+      const src = audioCtx.createBufferSource();
+      waveGain = audioCtx.createGain();
+      src.buffer = decoded;
+      src.loop = true;
+      waveGain.gain.value = 0.7;
+      src.connect(waveGain);
+      waveGain.connect(audioCtx.destination);
+      src.start();
+
+
+
+// 瞬态检测
+const analyser = audioCtx.createAnalyser();
+analyser.fftSize = 256;
+const src2 = audioCtx.createBufferSource();
+src2.buffer = decoded;
+src2.loop = true;
+src2.connect(analyser);
+src2.start();
+
+let lastTrigger = 0;
+
+function detect() {
+  const data = new Uint8Array(analyser.frequencyBinCount);
+  analyser.getByteFrequencyData(data);
+  let sum = 0;
+  for (let i = 0; i < 20; i++) sum += data[i];
+  const avg = sum / 20;
+
+  const now = Date.now();
+  if (avg > THRESHOLD && (now - lastTrigger) > 1200) {
+  lastTrigger = now;
+  if (isHost) {
+    triggerDrop(0.4 + Math.random() * 1.5);
+    openWindow();
+  } else {
+    openWindow();
+  }
+}
+  requestAnimationFrame(detect);
+}
+detect();
+    });
+}
+
+
+
+let current = 100;
+const FLOOR = 2;
+let pushCount = 0;
+let frozen = false;
+let windowOpen = false;
+let windowTimer = null;
+let startTime = null;
+let audioCtx = null;
+// random threshold with refreshing, range60-110
+const THRESHOLD = 60 + Math.floor(Math.random() * 50);
+
+const NOTE_FREQS = [130.81, 164.81, 196.00, 246.94, 261.63, 329.63];
+
+// loading
+function triggerDrop(amount) {
+  if (frozen) return;
+  current = Math.max(FLOOR, current - amount);
+  render();
+  if (isHost) sendData('drop', amount);
+}
+
+// window pop-up
+function openWindow() {
+  if (frozen) return;
+  windowOpen = true;
+  document.getElementById('win-dot').style.background = '#2a8fb5';
+  document.getElementById('win-dot').style.boxShadow = '0 0 6px #2a8fb5';
+  clearTimeout(windowTimer);
+  windowTimer = setTimeout(() => {
+    windowOpen = false;
+    document.getElementById('win-dot').style.background = 'var(--mid)';
+    document.getElementById('win-dot').style.boxShadow = 'none';
+  }, 600);
+}
+
+// push back
+function pushBack() {
+  if (frozen) return;
+  if (!windowOpen) {
+    document.getElementById('push-log').textContent = '> window closed — no effect';
+    return;
+  }
+  const gain = 0.1 + Math.random() * 0.9;
+  current = Math.min(100, current + gain);
+  pushCount++;
+  document.getElementById('push-count').textContent = pushCount;
+  document.getElementById('push-log').textContent = '> pushed +' + gain.toFixed(2) + '%';
+  playNote();
+  render();
+  sendData('push', gain);
+}
+
+// notes
+function playNote() {
+  if (!audioCtx) return;
+  const freq = NOTE_FREQS[Math.floor(Math.random() * NOTE_FREQS.length)];
+  const osc = audioCtx.createOscillator();
+  const env = audioCtx.createGain();
+  osc.type = 'sine';
+  osc.frequency.value = freq;
+  const now = audioCtx.currentTime;
+  env.gain.setValueAtTime(0, now);
+  env.gain.linearRampToValueAtTime(0.3, now + 0.02);
+  env.gain.exponentialRampToValueAtTime(0.001, now + 4.0);
+  osc.connect(env);
+  env.connect(audioCtx.destination);
+  osc.start(now);
+  osc.stop(now + 4.0);
+}
+
+function fadeOutWaves() {
+  if (!waveGain) return;
+  const now = audioCtx.currentTime;
+  waveGain.gain.setValueAtTime(0.7, now);
+  waveGain.gain.linearRampToValueAtTime(0, now + 15);
+}
+
+// 渲染
+function render() {
+  const pct = Math.max(FLOOR, current);
+  document.getElementById('bigNum').innerHTML =
+    Math.floor(pct) + '<span style="font-size:50px;color:var(--ocean);">%</span>';
+  document.getElementById('bar').style.width = pct + '%';
+  document.getElementById('env-val').textContent = (100 - pct).toFixed(2) + '%';
+
+  if (pct <= FLOOR + 0.05 && !frozen) {
+    frozen = true;
+    document.getElementById('status-val').textContent = 'Held at 2%';
+    document.getElementById('push-btn').disabled = true;
+    fadeOutWaves();
+  } else if (pct < 25 && !frozen) {
+    document.getElementById('status-val').textContent = 'Critical';
+  } else if (!frozen) {
+    document.getElementById('status-val').textContent = 'Compressing';
+  }
+}
+
+// clock
+setInterval(() => {
+  if (!startTime) return;
+  const e = Math.floor((Date.now() - startTime) / 1000);
+  document.getElementById('session-time').textContent =
+    'T+' + String(Math.floor(e/60)).padStart(2,'0') + ':' + String(e%60).padStart(2,'0');
+}, 250);
+
+// 空格键触发
+document.addEventListener('keydown', e => {
+  if (e.code === 'Space') { e.preventDefault(); pushBack(); }
+});
+  </script>
+
+</body>
+</html>
