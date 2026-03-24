@@ -3,18 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <title>98% / 2%</title>
-  <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=VT323&family=Silkscreen&family=Press+Start+2P&family=Courier+Prime&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
   <style>
 :root {
   --deep:  #020d1a;
-  --abyss: #041628;
+  --navy: #0b0b45;
   --mid:   #0a2a45;
-  --steel: #0d3d5e;
+  --steel: #0f0f5f;
   --ocean: #1a6088;
   --wave:  #2a8fb5;
-  --foam:  #5bbcd8;
-  --mist:  #a8d8ea;
+  --foam:  #f5d080;
+  --mist:  #00bbff;
   --crest: #d4eef7;
   --gold: #f0c040;
 }
@@ -59,20 +59,20 @@ body {
   align-items:center; justify-content:center;
   z-index:999; gap:16px;
 ">
-  <div style="font-family:'VT323',monospace; font-size:120px; color:var(--foam);">98% / 2%</div>
-  <div style="font-size:11px; color:var(--steel); letter-spacing:0.3em;">MANHATTAN ↔ BROOKLYN</div>
+  <div style="font-family:'VT323',monospace; font-size:180px; color:var(--foam);">98% / 2%</div>
+  <div style="font-family: 'Press Start 2P', monospace; font-size: 11px; color:var(--navy); letter-spacing:0.3em;">the ninety-eight and my two percent</div>
 
   <div id="host-section" style="display:flex; flex-direction:column; align-items:center; gap:10px; margin-top:20px;">
-    <button onclick="startHost()" style="background:none; border:1px solid var(--gold); color:var(--gold); font-family:monospace; font-size:12px; padding:10px 28px; cursor:pointer; letter-spacing:0.15em;">[ HOST — BK ]</button>
-    <div id="host-id" style="font-size:10px; color:var(--steel); letter-spacing:0.1em;"></div>
+    <button onclick="startHost()" style="background:none; border:1px solid var(--gold); color:var(--gold); font-family: 'Press Start 2P', monospace; font-size: 9px; padding:10px 28px; cursor:pointer; letter-spacing:0.15em;">[ HOST — BK ]</button>
+    <div id="host-id" style="font-family: 'Courier Prime', monospace; font-size:11px; color:var(--steel); letter-spacing:0.1em;"></div>
   </div>
 
   <div style="display:flex; flex-direction:column; align-items:center; gap:10px; margin-bottom:20px;">
-    <input id="peer-input" placeholder="paste host ID here" style="background:var(--abyss); border:1px solid var(--mid); color:var(--mist); font-family:monospace; font-size:11px; padding:8px 16px; letter-spacing:0.1em; outline:none; width:260px; margin-bottom:15px;">
-    <button onclick="joinHost()" style="background:none; border:1px solid var(--foam); color:var(--foam); font-family:monospace; font-size:12px; padding:10px 28px; cursor:pointer; letter-spacing:0.15em;">[ JOIN — MHT ]</button>
+    <input id="peer-input" placeholder="paste host ID here" style="background:var(--navy); border:1px solid var(--mid); color:var(--mist); font-family: 'Courier Prime', monospace; font-size: 11px; padding:8px 16px; letter-spacing:0.1em; outline:none; width:260px; margin-bottom:15px;">
+    <button onclick="joinHost()" style="background:none; border:1px solid var(--foam); color:var(--foam); font-family: 'Press Start 2P', monospace; font-size: 9px; padding:10px 28px; cursor:pointer; letter-spacing:0.15em;">[ JOIN — MHT ]</button>
   </div>
 
-  <div id="conn-status" style="font-size:10px; color:var(--mid); letter-spacing:0.1em;">—</div>
+  <div id="conn-status" style="font-family: 'Courier Prime', monospace; font-size:11px; color:var(--steel); letter-spacing:0.1em;">—</div>
 </div>
 
 <div id="main-screen" style="width:600px; position:relative; z-index:2; display:none;">
